@@ -1,5 +1,6 @@
 const express = require('express');
 require('dotenv').config();
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 const app = express()
 const port = process.env.PORT || 5000
@@ -11,7 +12,7 @@ app.use(express.json());
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.n2defbf.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -31,6 +32,20 @@ async function run() {
     const toysCollection = client.db('toysdb').collection('toys')
 
 
+    //get all toys data
+    app.get('/toys', async(req, res)=>{
+      const cursor = toysCollection.find()
+      const result = await cursor.toArray()
+      res.send(result)
+    })
+
+    //get single data
+    app.get('/toys/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await toysCollection.findOne(query);
+      res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
@@ -46,8 +61,6 @@ run().catch(console.dir);
 
 
 
-
-
 app.get('/', (req, res) => {
     res.send('Hello World!')
   })
@@ -55,3 +68,4 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
   })
+
