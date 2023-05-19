@@ -56,7 +56,6 @@ async function run() {
 
     //get my data by email
     app.get('/mytoys', async(req, res)=>{
-      console.log(req.query?.email)
       let query = {};
       if(req.query?.email){
         query = {email: req.query.email}
@@ -80,6 +79,23 @@ async function run() {
       }).toArray();
       res.send(result)
     });
+
+    //update toys data
+    app.put('/toys/:id', async(req, res)=>{
+      const id = req.params.id;
+      const update  = req.body;
+      const filter = {_id: new ObjectId(id)};
+      const options = {upsert: true};
+      const toys = {
+        $set: {
+          price: update.price,
+          quantity: update.quantity,
+          details: update.details,
+        }
+      }
+      const result = await toysCollection.updateOne(filter, toys, options);
+      res.send(result)
+    })
 
 
     //delete data
