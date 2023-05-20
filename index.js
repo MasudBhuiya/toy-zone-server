@@ -27,15 +27,14 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
 
     const toysCollection = client.db('toysdb').collection('toys')
 
 
     //get all toys data
     app.get('/toys', async(req, res)=>{
-      const cursor = toysCollection.find()
-      const result = await cursor.toArray()
+      const limit = parseInt(req.query.limit) || 20;
+      const result = await toysCollection.find().limit(limit).toArray()
       res.send(result)
     })
 
@@ -64,6 +63,9 @@ async function run() {
       res.send(result)
     })
 
+    //sorting
+    
+
 
     //get data by name
     const indexKeys = {name: 1};
@@ -79,6 +81,7 @@ async function run() {
       }).toArray();
       res.send(result)
     });
+
 
     //update toys data
     app.put('/toys/:id', async(req, res)=>{
@@ -96,6 +99,9 @@ async function run() {
       const result = await toysCollection.updateOne(filter, toys, options);
       res.send(result)
     })
+
+
+
 
 
     //delete data
