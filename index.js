@@ -29,12 +29,20 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
 
     const toysCollection = client.db('toysdb').collection('toys')
-
+    const bottleCollection = client.db('toysdb').collection('bottles')
 
     //get all toys data
     app.get('/toys', async(req, res)=>{
+      const sort = req.query.sort;
+      console.log(sort)
+      const query = {};
+      const options = {
+        sort: {
+          "price": sort === 'asc' ? 1 : -1
+        }
+      }
       const limit = parseInt(req.query.limit) || 20;
-      const result = await toysCollection.find().limit(limit).toArray()
+      const result = await toysCollection.find(query, options).limit(limit).toArray()
       res.send(result)
     })
 
@@ -46,12 +54,39 @@ async function run() {
       res.send(result);
     });
 
+
+    //normal get bottles
+    app.get('/bottles', async(req, res)=>{
+      const cursor = bottleCollection.find()
+      const result = await cursor.toArray();
+      res.send(result)
+  })
+
+  //post bottle
+  app.post('/bottles', async(req, res)=>{
+    const bottle = req.body;
+    console.log('new user', bottle);
+    const result = await bottleCollection.insertOne(bottle);
+    res.send(result);
+});
+
+//delete bottle
+app.delete('/bottles/:id', async(req, res)=>{
+  const id = req.params.id;
+  console.log('please delete from database', id);
+  const query = {_id: new ObjectId(id)}
+  const result = await bottleCollection.deleteOne(query);
+  res.send(result)
+})
+
     //post/create data
     app.post('/toys', async(req, res)=>{
       const addToys = req.body;
       const result = await toysCollection.insertOne(addToys);
       res.send(result)
     })
+
+
 
     //get my data by email
     app.get('/mytoys', async(req, res)=>{
